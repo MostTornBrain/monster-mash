@@ -65,9 +65,6 @@ export default class PF2eCreatureAdjuster extends Plugin {
 			}
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
 		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
 		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
 	}
@@ -119,14 +116,19 @@ export default class PF2eCreatureAdjuster extends Plugin {
 			sections.afterStatblock = sections.afterStatblock.replace(name_regex, name_prepend);
 
 			// Retrieve level from statblock
-			const statblock_level_regex = /(level:\s+"\w+?\s+)(\d+)/;
+			const statblock_level_regex = /(level:\s+"\w+?\s+)(-)?(\d+)/;
 			match = sections.statblockText.match(statblock_level_regex);
 			let level = -100;
 			if (match) {
-				level = parseInt(match[2], 10);
+				level = parseInt(match[3], 10);
+				// Handle negative level
+				if (match[2]) {
+					level = -level;
+				}
 			} else {
 				console.log("Failed to locate level in statblock!");
 			}
+			const orig_level = level;
 
 			// Retrieve current HP from statblock
 			const hp_regex = /(hp:\s+)(\d+)/;
@@ -182,11 +184,11 @@ export default class PF2eCreatureAdjuster extends Plugin {
 			}
 
 			// Change "level: " in frontmatter
-			const level_regex = /(level:\s+)(\d+)/;
+			const level_regex = new RegExp('(level:\\s+)' + orig_level);
 			sections.beforeStatblock = sections.beforeStatblock.replace(level_regex, (match, p1) => `${p1}${level}`);
 
 			// Change "pf2e/create/level/" in frontmatter tags
-			const level_tag_regex = /(pf2e\/creature\/level\/)(\d+)/;
+			const level_tag_regex = new RegExp('(pf2e\/creature\/level\/)' + orig_level);
 			sections.beforeStatblock = sections.beforeStatblock.replace(level_tag_regex, (match, p1) => `${p1}${level}`);
 
 			// Change "level: " in statblock
@@ -219,24 +221,27 @@ export default class PF2eCreatureAdjuster extends Plugin {
 			});
 
 			// Adjust Saves
-			const saves_regex = /(__Fort__\D+)(\d+)(\D+)(\d+)(\D+)(\d+)/;
-			match = sections.statblockText.match(saves_regex);
-			let fort = 0;
-			let reflex = 0;
-			let will = 0;
-			if (match) {
-				fort = parseInt(match[2], 10) + mod;
-				reflex = parseInt(match[4], 10) + mod;
-				will = parseInt(match[6], 10) + mod;
-			}			
-			sections.statblockText = sections.statblockText.replace(saves_regex, (match, p1, p2, p3, p4, p5) => `${p1}${fort}${p3}${reflex}${p5}${will}`);			
+			const saves_regex = /(name:\s+AC\n\s+desc:\s+"\d+[\s\S]*?;)([^;]+)/;
+			sections.statblockText = sections.statblockText.replace(
+				saves_regex, (match, preamble, savesSection) => {
+				// Adjust skill values within the captured "Skills" section
+				const updatedSavesSection = savesSection.replace(
+					/(\+\d+)/g,
+					(saveMatch: string) => {
+						const value = parseInt(saveMatch, 10) + mod;
+						return `+${value}`;
+					}
+				);
+				return `${preamble}${updatedSavesSection}`;
+				}
+			);					
 
-			// Adjust Perception
-			const perception_regex = /("Perception"\n\s+desc:\s+"\+)(\d+)/;
+			// Adjust Perception - handle "legacy" PF2E perception format from TTRPG github bestiary
+			const perception_regex = /("Perception"\n\s+desc:\s+"(Perception\s+)?\+)(\d+)/;
 			match = sections.statblockText.match(perception_regex);
 			let perception = 0;
 			if (match) {
-				perception = parseInt(match[2], 10) + mod;
+				perception = parseInt(match[3], 10) + mod;
 			}			
 			sections.statblockText = sections.statblockText.replace(perception_regex, (match, p1) => `${p1}${perception}`);			
 
@@ -289,6 +294,20 @@ export default class PF2eCreatureAdjuster extends Plugin {
 					}
 				);
 
+				// Adjust attack mods that are like "⬻ Axe +X"
+				updatedAttacksSection = updatedAttacksSection.replace(
+					/(\s*desc: "[^\s\d\w] [^+]+)(\+\d+)/g,
+					(attack: string, attack_preamble, attack_value:string) => {
+						const value = parseInt(attack_value, 10) + mod;
+
+						if (value < 0) {
+							return `${attack_preamble}${value}`;
+						} else {
+							return `${attack_preamble}+${value}`;
+						}
+					}
+				);
+				
 				// Adjust damage for strikes and other offensives
 				// Look for similar to "__Damage__ 1d6 + 12" 
 				updatedAttacksSection = updatedAttacksSection.replace(
@@ -313,7 +332,7 @@ export default class PF2eCreatureAdjuster extends Plugin {
 					}
 				);
 
-				// Look for other damage rolls (a die rool within 3 words before the word "damage")
+				// Look for other damage rolls (a die roll within 3 words before the word "damage")
 				updatedAttacksSection = updatedAttacksSection.replace(
 					/(\b\d+d\d+\b)(\s+[\+-]\s+)?(\d+)?(?=(?:\s+\w+){0,3}\s+damage)/g,
 					(attack: string, attack_preamble, attack_mod, attack_value:string) => {
@@ -336,7 +355,6 @@ export default class PF2eCreatureAdjuster extends Plugin {
 					}
 				);
 
-
 				return `${preamble}${updatedAttacksSection}`;
 				}
 			);
@@ -346,7 +364,7 @@ export default class PF2eCreatureAdjuster extends Plugin {
 			const currentNoteFolderPath = currFile?.parent?.path;
 			const newNoteFileName = name + name_suffix + ".md";
 			const newNotePath = `${currentNoteFolderPath}/${newNoteFileName}`;
-			const new_monster = sections.beforeStatblock + "```statblock\n" + sections.statblockText + "```\n" + sections.afterStatblock;
+			const new_monster = sections.beforeStatblock + "```statblock\n" + sections.statblockText + "\n```\n" + sections.afterStatblock;
 			try {
 				await this.app.vault.create(newNotePath, new_monster);
 				console.log("New note created successfully in the same folder as the current note.");
