@@ -1,7 +1,7 @@
 # PF2E Creature Adjuster
 
 This is an Obsidian Plugin designed to work with existing Pathfinder 2E monster
-statblocks.   It provides the ability to create a new copy of a currently viewed
+statblocks.   It provides the ability to create a new note based on a currently viewed
 monster and make it "elite" or "weak" per the PF2E rules in the Monster Core, page 
 6, titled "Adjusting Creatures".
 
