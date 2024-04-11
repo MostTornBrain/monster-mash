@@ -97,8 +97,9 @@ export default class MonsterMash extends Plugin {
 
 			// Escape potential regex special characters in `name`
 			const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-			// Create a dynamic regex that matches all occurrences of `name`
-			const name_regex = new RegExp(escapedName, 'g');
+			
+			// Include negative lookbehind to check for absence of `[` before the name
+			const name_regex = new RegExp('(?<!\\[)' + escapedName, 'g');
 
 			let name_prepend = 'Weak $&';
 			let name_suffix = ", Weak";

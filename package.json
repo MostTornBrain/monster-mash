@@ -1,6 +1,6 @@
 {
 	"name": "monster-mash",
-	"version": "0.0.1",
+	"version": "1.0.1",
 	"description": "Clone a PF2E monster statblock to elite or weak.",
 	"main": "main.js",
 	"scripts": {
