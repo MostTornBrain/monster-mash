@@ -1,4 +1,4 @@
-# Monster Mash
+# PF2E Creature Adjuster
 
 This is an Obsidian Plugin designed to work with existing Pathfinder 2E monster
 statblocks.   It provides the ability to create a new copy of a currently viewed
