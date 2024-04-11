@@ -1,7 +1,7 @@
 {
-	"name": "monster-mash",
-	"version": "1.0.1",
-	"description": "Clone a PF2E monster statblock to elite or weak.",
+	"name": "pf2e-creature-adjuster",
+	"version": "1.0.2",
+	"description": "Apply PF2E elite/weak to a monster.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

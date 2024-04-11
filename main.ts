@@ -18,7 +18,7 @@ function extractSections(noteContent: string) {
     }
 }
 
-export default class MonsterMash extends Plugin {
+export default class PF2eCreatureAdjuster extends Plugin {
 
 	async onload() {
 
@@ -97,7 +97,7 @@ export default class MonsterMash extends Plugin {
 
 			// Escape potential regex special characters in `name`
 			const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-			
+
 			// Include negative lookbehind to check for absence of `[` before the name
 			const name_regex = new RegExp('(?<!\\[)' + escapedName, 'g');
 
