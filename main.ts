@@ -221,7 +221,7 @@ export default class PF2eCreatureAdjuster extends Plugin {
 			});
 
 			// Adjust Saves
-			const saves_regex = /(name:\s+AC\n\s+desc:\s+"\d+[\s\S]*?;)([^;]+)/;
+			const saves_regex = /(name:\s+AC\n\s+desc:\s+"\d+[\s\S]*?;\s+__Fort__)([^;"]+)/;
 			sections.statblockText = sections.statblockText.replace(
 				saves_regex, (match, preamble, savesSection) => {
 				// Adjust skill values within the captured "Skills" section
@@ -266,7 +266,6 @@ export default class PF2eCreatureAdjuster extends Plugin {
 			sections.statblockText = sections.statblockText.replace(
 				attacks_section_regex,
 				(match, preamble, attacksSection) => {
-				
 				// Adjust attack mods that are simply "attack +X"
 				let updatedAttacksSection = attacksSection.replace(
 					/(attack )(\+\d+)/g,
@@ -310,9 +309,15 @@ export default class PF2eCreatureAdjuster extends Plugin {
 				
 				// Adjust damage for strikes and other offensives
 				// Look for similar to "__Damage__ 1d6 + 12" 
+				// const regex = /(\d+d\d+[\+\-]?\d*)\s*(?:\((\d+d\d+[\+\-]?\d*)\))?/;
 				updatedAttacksSection = updatedAttacksSection.replace(
-					/(__Damage__\s+\d+d\d+)(\s+[\+-]\s+)?(\d+)?/g,
-					(attack: string, attack_preamble, attack_mod, attack_value:string) => {
+				  ///(__Damage__\s+\d+d\d+(\+\d+)?)(?:\s*\((\d+d\d+(\+\d+)?)\))?/g
+					/(__Damage__\s+\d+d\d+)(\s*[\+-]?\s*)?(\d+)?(?:\s*\((\d+d\d+\s*[\+\-]?\s*\d*)?\))?/g,
+					(attack: string, attack_preamble:string, attack_mod:string, attack_value:string, paren_attack:string) => {
+						console.log("attack preamble:", attack_preamble);
+						console.log("attack mod:", attack_mod);
+						console.log("attack value:", attack_value);
+						console.log("attack paren_attack:", paren_attack);
 						let value = 0;
 						if (attack_value) {
 							value = parseInt(attack_value, 10);
