@@ -314,10 +314,6 @@ export default class PF2eCreatureAdjuster extends Plugin {
 				  ///(__Damage__\s+\d+d\d+(\+\d+)?)(?:\s*\((\d+d\d+(\+\d+)?)\))?/g
 					/(__Damage__\s+\d+d\d+)(\s*[\+-]?\s*)?(\d+)?(?:\s*\((\d+d\d+\s*[\+\-]?\s*\d*)?\))?/g,
 					(attack: string, attack_preamble:string, attack_mod:string, attack_value:string, paren_attack:string) => {
-						console.log("attack preamble:", attack_preamble);
-						console.log("attack mod:", attack_mod);
-						console.log("attack value:", attack_value);
-						console.log("attack paren_attack:", paren_attack);
 						let value = 0;
 						if (attack_value) {
 							value = parseInt(attack_value, 10);
@@ -372,7 +368,6 @@ export default class PF2eCreatureAdjuster extends Plugin {
 			const new_monster = sections.beforeStatblock + "```statblock\n" + sections.statblockText + "\n```\n" + sections.afterStatblock;
 			try {
 				await this.app.vault.create(newNotePath, new_monster);
-				console.log("New note created successfully in the same folder as the current note.");
 				new Notice(newNoteFileName + " created.", 5000);
 				this.app.workspace.openLinkText(newNoteFileName, newNotePath, true, { active: true });
 			} catch (err) {
