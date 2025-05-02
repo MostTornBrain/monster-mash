@@ -237,6 +237,7 @@ export default class PF2eCreatureAdjuster extends Plugin {
 			);					
 
 			// Adjust Perception - handle "legacy" PF2E perception format from TTRPG github bestiary
+			
 			const perception_regex = /("Perception"\n\s+desc:\s+"(Perception\s+)?\+)(\d+)/;
 			match = sections.statblockText.match(perception_regex);
 			let perception = 0;
@@ -261,6 +262,15 @@ export default class PF2eCreatureAdjuster extends Plugin {
 				}
 			);
 
+			// Adjust perception modifier for Initiative tracker plugin
+			const modifier_regex = /(modifier:\s+)(-)?(\d+)/;
+			match = sections.statblockText.match(modifier_regex);
+			let modifier = 0;
+			if (match) {
+				modifier = parseInt(match[3], 10) + mod;
+			}			
+			sections.statblockText = sections.statblockText.replace(modifier_regex, (match, p1) => `${p1}${modifier}`);
+			
 			// Adjust attack mods
 			const attacks_section_regex = /(attacks:\n\s+- name:)([\s\S]+)$/;
 			sections.statblockText = sections.statblockText.replace(
