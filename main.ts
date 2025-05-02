@@ -279,6 +279,20 @@ export default class PF2eCreatureAdjuster extends Plugin {
 					}
 				);
 
+				// Adjust attack mods that are like "Axe +X in desc"
+				updatedAttacksSection = updatedAttacksSection.replace(
+					/(\s*desc: "[^+]+?)\s(\+\d+)/g,
+					(attack: string, attack_preamble, attack_value:string) => {
+						const value = parseInt(attack_value, 10) + mod;
+
+						if (value < 0) {
+							return `${attack_preamble}${value}`;
+						} else {
+							return `${attack_preamble}+${value}`;
+						}
+					}
+				);
+					
 				// Adjust attack mods that are like "`pf2e:1` Axe +X"
 				updatedAttacksSection = updatedAttacksSection.replace(
 					/(\s*desc: "`pf2:[^`]+` [^+]+)(\+\d+)/g,
