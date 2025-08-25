@@ -1,8 +1,8 @@
 {
 	"id": "pf2e-creature-adjuster",
 	"name": "PF2E Creature Adjuster",
-	"version": "1.0.6",
-	"minAppVersion": "0.15.3",
+	"version": "1.0.7",
+	"minAppVersion": "0.15.0",
 	"description": "Apply PF2E elite/weak to a monster.",
 	"author": "MostTornBrain",
 	"authorUrl": "https://github.com/MostTornBrain",
