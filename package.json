@@ -1,6 +1,6 @@
 {
 	"name": "pf2e-creature-adjuster",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"description": "Apply PF2E elite/weak to a monster.",
 	"main": "main.js",
 	"scripts": {
